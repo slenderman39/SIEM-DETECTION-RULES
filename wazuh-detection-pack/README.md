@@ -1,4 +1,4 @@
-# Wazuh Detection Pack
+#  Detection Pack
 
 Production-grade Wazuh custom rules ready for use in enterprise environments. Rules focus on high-signal detections for Windows, Linux, and SSH, with MITRE ATT&CK mapping and sensible safeguards.
 
@@ -10,7 +10,7 @@ Production-grade Wazuh custom rules ready for use in enterprise environments. Ru
 
 ## Quick start
 
-1. Copy `rules/custom_rules.xml` to your Wazuh Manager:
+1. Copy `rules/custom_rules.xml` to your Manager:
    - **Wazuh 4.x** (recommended): `/var/ossec/etc/rules/local_rules.xml` *or* `/var/ossec/etc/rules.d/custom_rules.xml`
 2. Validate and restart/reload the manager:
    ```bash
