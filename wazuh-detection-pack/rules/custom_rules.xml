@@ -1,0 +1,135 @@
+<group>
+  <!-- GLOBAL: Suspicious PowerShell execution (Sysmon EID 1) -->
+  <rule id="110001" level="12">
+    <decoded_as>windows</decoded_as>
+    <group>windows,sysmon,powershell,execution,attack.execution</group>
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.Image">(?i)\\(powershell|pwsh)(\.exe)?$</field>
+    <field name="win.eventdata.CommandLine">
+      (?i)(
+        -enc(odedcommand)?|
+        -nop|
+        -noni|
+        -w\s+hidden|
+        FromBase64String|
+        IEX\b|
+        Invoke-WebRequest|iwr\b|
+        Invoke-RestMethod|irm\b|
+        DownloadString|
+        Add-Type|
+        Start-Process\s+.*-WindowStyle\s+Hidden|
+        -ExecutionPolicy\s+Bypass
+      )
+    </field>
+    <description>Suspicious PowerShell execution with obfuscation or web cradle (Sysmon EID 1).</description>
+    <mitre>
+      <id>T1059.001</id>
+      <id>T1105</id>
+      <id>T1055</id>
+    </mitre>
+    <options>no_full_log</options>
+  </rule>
+
+  <!-- GLOBAL: Privileged Windows group membership add (SecEvt 4728/4732) -->
+  <rule id="110010" level="13">
+    <decoded_as>windows</decoded_as>
+    <group>windows,security,privilege,attack.privilege_escalation,attack.persistence</group>
+    <if_group>windows_security</if_group>
+    <field name="win.system.eventID">^(4728|4732)$</field>
+    <field name="win.eventdata.TargetUserName">(?i)^(Administrators|Domain Admins|Enterprise Admins)$</field>
+    <description>Privileged group membership change detected (member added to critical admin group).</description>
+    <mitre>
+      <id>T1098</id>
+      <id>T1069</id>
+      <id>T1078</id>
+    </mitre>
+    <options>no_full_log</options>
+  </rule>
+
+  <!-- GLOBAL: Linux FIM – critical auth/privilege files -->
+  <rule id="110020" level="11">
+    <decoded_as>syscheck</decoded_as>
+    <group>linux,fim,identity,privilege,attack.persistence,attack.privilege_escalation</group>
+    <if_group>syscheck</if_group>
+    <field name="syscheck.path">^/etc/(passwd|shadow|group|sudoers)$</field>
+    <field name="syscheck.event">^(added|modified|deleted)$</field>
+    <description>FIM: change to critical auth/privilege file (/etc/passwd, /etc/shadow, /etc/group, /etc/sudoers).</description>
+    <mitre>
+      <id>T1098</id>
+      <id>T1547</id>
+      <id>T1068</id>
+    </mitre>
+    <options>no_full_log</options>
+  </rule>
+
+  <!-- GLOBAL: Windows Security log cleared -->
+  <rule id="110030" level="14">
+    <decoded_as>windows</decoded_as>
+    <group>windows,security,attack.defense_evasion,anti_forensics</group>
+    <if_group>windows_security</if_group>
+    <field name="win.system.eventID">^1102$</field>
+    <description>Security log was cleared (anti-forensics activity).</description>
+    <mitre>
+      <id>T1070.001</id>
+    </mitre>
+    <options>no_full_log</options>
+  </rule>
+
+  <!-- GLOBAL: New local user created -->
+  <rule id="110031" level="12">
+    <decoded_as>windows</decoded_as>
+    <group>windows,security,identity,attack.persistence,attack.privilege_escalation</group>
+    <if_group>windows_security</if_group>
+    <field name="win.system.eventID">^4720$</field>
+    <description>New local user account was created.</description>
+    <mitre>
+      <id>T1136.001</id>
+    </mitre>
+    <options>no_full_log</options>
+  </rule>
+
+  <!-- GLOBAL: Scheduled task created -->
+  <rule id="110032" level="12">
+    <decoded_as>windows</decoded_as>
+    <group>windows,security,persistence,scheduled_task,attack.persistence</group>
+    <if_group>windows_security</if_group>
+    <field name="win.system.eventID">^4698$</field>
+    <description>New scheduled task was created.</description>
+    <mitre>
+      <id>T1053.005</id>
+    </mitre>
+    <options>no_full_log</options>
+  </rule>
+
+  <!-- GLOBAL: LOLBIN abuse with suspicious args -->
+  <rule id="110033" level="12">
+    <decoded_as>windows</decoded_as>
+    <group>windows,sysmon,lolbin,execution,attack.defense_evasion,attack.execution</group>
+    <if_group>sysmon_event1</if_group>
+    <field name="win.eventdata.Image">(?i)\\(rundll32|regsvr32|mshta|certutil|installutil|bitsadmin|wmic|cmstp|msbuild)(\.exe)?$</field>
+    <field name="win.eventdata.CommandLine">(?i)(http(s)?://|ftp://|file://|script:|/urlcache|/decode|mshtml|javascript:|JScript|/i:|download|Base64|addstore|ENCODED|\.sct\b)</field>
+    <description>Potential LOLBIN abuse: signed binary proxy execution with web/script payload indicators.</description>
+    <mitre>
+      <id>T1218</id>
+      <id>T1105</id>
+    </mitre>
+    <options>no_full_log</options>
+  </rule>
+
+  <!-- GLOBAL: SSH brute-force burst followed by success (sshd) -->
+  <rule id="110040" level="12">
+    <group>linux,sshd,authentication,bruteforce,attack.credential_access,attack.persistence</group>
+    <if_group>sshd</if_group>
+    <field name="program_name">^sshd$</field>
+    <regex>(?i)Accepted (password|publickey)</regex>
+    <if_matched_sid>5712</if_matched_sid>
+    <same_srcip>true</same_srcip>
+    <timeframe>900</timeframe>
+    <description>SSHD brute-force followed by successful login from the same IP (within 15 minutes of burst).</description>
+    <mitre>
+      <id>T1110</id>
+      <id>T1078</id>
+    </mitre>
+    <options>no_full_log</options>
+  </rule>
+</group>
