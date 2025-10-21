@@ -15,12 +15,12 @@ Production-grade Wazuh custom rules ready for use in enterprise environments. Ru
 2. Validate and restart/reload the manager:
    ```bash
    sudo /var/ossec/bin/wazuh-logtest -U /var/ossec/etc/rules/local_rules.xml
-   sudo systemctl restart wazuh-manager
+   sudo systemctl restart manager
    ```
 3. (Optional) Keep it as a dedicated rules file:
    ```bash
    sudo cp rules/custom_rules.xml /var/ossec/etc/rules.d/1100-custom-detections.xml
-   sudo systemctl restart wazuh-manager
+   sudo systemctl restart manager
    ```
 
 ## Data sources expected
@@ -47,3 +47,7 @@ Production-grade Wazuh custom rules ready for use in enterprise environments. Ru
 
 ## License
 MIT – see `LICENSE`.
+
+
+
+
